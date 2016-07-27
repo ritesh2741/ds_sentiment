@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160726182853) do
+ActiveRecord::Schema.define(version: 20160727203817) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -21,6 +21,8 @@ ActiveRecord::Schema.define(version: 20160726182853) do
     t.integer  "post_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string   "sentiment1"
+    t.string   "sentiment2"
   end
 
   add_index "comments", ["post_id"], name: "index_comments_on_post_id", using: :btree
@@ -30,8 +32,14 @@ ActiveRecord::Schema.define(version: 20160726182853) do
     t.text     "text"
     t.integer  "likes"
     t.integer  "shares"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at",     null: false
+    t.datetime "updated_at",     null: false
+    t.integer  "pos_sentiment1"
+    t.integer  "neg_sentiment1"
+    t.integer  "ntr_sentiment1"
+    t.integer  "pos_sentiment2"
+    t.integer  "neg_sentiment2"
+    t.integer  "ntr_sentiment2"
   end
 
   add_foreign_key "comments", "posts"
