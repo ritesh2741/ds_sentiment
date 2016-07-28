@@ -11,8 +11,9 @@ class SentimentsController < ApplicationController
 			else
 				result = "error"
 			end
+			x.sentiment1 = result
+			x.save!
 		end
-		binding.pry
 	end
 
 	def self.sentiment_analyzer
@@ -33,6 +34,8 @@ class SentimentsController < ApplicationController
 			else
 				result = "error"
 			end
+			x.sentiment2 = result
+			x.save!
 		end
 	end
 end
