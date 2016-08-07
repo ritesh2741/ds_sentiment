@@ -7,18 +7,40 @@ class PostsController < ApplicationController
 	end
 
 	def self.fetch_post
+		yy= 2015
+		mm= 04
 		access_token_request = HTTParty.get("https://graph.facebook.com/oauth/access_token?client_id="+CLIENT_ID+"&client_secret="+CLIENT_SECRET+"&grant_type=client_credentials")
 		access_token = access_token_request.parsed_response
-		res = HTTParty.get("https://graph.facebook.com/v2.7/UniversityofAkron?"+access_token+"&fields=posts{message,created_time,comments}")
-		feed = res.first.last.first.last
-		parse_post(feed)
+		for i in 1..15
+			if mm <= 11
+				feed = req(mm,yy,access_token)
+				parse_post(feed)
+				mm += 1
+			else
+				yy = yy+1
+				mm = 01
+				feed = req(mm,yy,access_token)
+				parse_post(feed)
+			end
+		end
 	end
 
 	def self.parse_post(feed)
 		feed.each do |x|
 			created_time = x['created_time']
 			title = x['message']
-			post = Post.create(title: title)
+			fb_id = x['id']
+			# begin
+			# 	likes = x['likes']['data'].count
+			# rescue
+			# 	likes = 0
+			# end
+			begin
+				shares = x['shares']['count']
+			rescue
+				shares = 0
+			end
+			post = Post.create(title: title,fb_id: fb_id,shares: shares)
 			unless x['comments'] == nil 
 				parse_comment(post.id,x)
 			end
@@ -35,35 +57,45 @@ class PostsController < ApplicationController
 	def self.update
 		comments = Comment.all
 		posts = Post.all
+		post_initialization(posts)
 		posts.each do |p|
-				p.pos_sentiment1 = 0
-				p.neg_sentiment1 = 0
-				p.ntr_sentiment1 = 0
-				p.pos_sentiment2 = 0
-				p.neg_sentiment2 = 0
-				p.ntr_sentiment2 = 0
-				p.save!
-		end
-		comments.each do |x|
-			posts.each do |y|
-				if x.post_id == y.id
-					if x.sentiment1 == "pos" || "positive"
-						y.pos_sentiment1 += 1
-					elsif x.sentiment1 == "neg" || "negative"
-						y.neg_sentiment1 += 1
+			comments = p.comments
+			if p.comments.present?
+				comments.each do |c|
+					if c.sentiment1 == ("pos" || "positive")
+						p.pos_sentiment1 += 1
+					elsif c.sentiment1 == ("neg" || "negative")
+						p.neg_sentiment1 += 1
 					else
-						y.ntr_sentiment1 += 1
+						p.ntr_sentiment1 += 1
 					end
-					if x.sentiment2 == "pos" || "positive"
-						y.pos_sentiment2 += 1
-					elsif x.sentiment2 == "neg" || "negative"
-						y.neg_sentiment2 += 1
+					if c.sentiment2 == ("pos" || "positive")
+						p.pos_sentiment2 += 1
+					elsif c.sentiment2 == ("neg" || "negative")
+						p.neg_sentiment2 += 1
 					else
-						y.ntr_sentiment2 += 1
+						p.ntr_sentiment2 += 1
 					end
-				y.save!
+					p.save!
 				end
 			end
 		end
+	end
+
+	def self.post_initialization(posts)
+		posts.each do |p|
+			p.pos_sentiment1 = 0
+			p.neg_sentiment1 = 0
+			p.ntr_sentiment1 = 0
+			p.pos_sentiment2 = 0
+			p.neg_sentiment2 = 0
+			p.ntr_sentiment2 = 0
+			p.save!
+		end
+	end
+
+	def self.req(mm,yy,access_token)
+		res = HTTParty.get("https://graph.facebook.com/v2.7/UniversityofAkron?"+access_token+"&fields=posts.until("+yy.to_s+"-"+(mm).to_s+"-31).since("+yy.to_s+"-"+mm.to_s+"-01).limit(100){created_time,comments,message,shares}")
+		feed = res.first.last.first.last
 	end
 end
