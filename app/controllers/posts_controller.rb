@@ -11,8 +11,8 @@ class PostsController < ApplicationController
 		mm= 04
 		access_token_request = HTTParty.get("https://graph.facebook.com/oauth/access_token?client_id="+CLIENT_ID+"&client_secret="+CLIENT_SECRET+"&grant_type=client_credentials")
 		access_token = access_token_request.parsed_response
-		for i in 1..15
-			if mm <= 11
+		for i in 1..16
+			if mm <= 12
 				feed = req(mm,yy,access_token)
 				parse_post(feed)
 				mm += 1
@@ -79,7 +79,7 @@ class PostsController < ApplicationController
 					p.save!
 				end
 			end
-			
+
 		end
 	end
 
@@ -96,7 +96,7 @@ class PostsController < ApplicationController
 	end
 
 	def self.req(mm,yy,access_token)
-		res = HTTParty.get("https://graph.facebook.com/v2.7/UniversityofAkron?"+access_token+"&fields=posts.until("+yy.to_s+"-"+(mm).to_s+"-31).since("+yy.to_s+"-"+mm.to_s+"-01).limit(100){created_time,comments,message,shares}")
+		res = HTTParty.get("https://graph.facebook.com/v2.7/UniversityofAkron?"+access_token+"&fields=posts.until("+yy.to_s+"-"+(mm).to_s+"-31).since("+yy.to_s+"-"+mm.to_s+"-01).limit(100){created_time,comments.limit(100),message,shares}")
 		feed = res.first.last.first.last
 	end
 
