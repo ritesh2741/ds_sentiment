@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160803142820) do
+ActiveRecord::Schema.define(version: 20160808211237) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -40,6 +40,7 @@ ActiveRecord::Schema.define(version: 20160803142820) do
     t.integer  "pos_sentiment2"
     t.integer  "neg_sentiment2"
     t.integer  "ntr_sentiment2"
+    t.string   "dob"
   end
 
   add_foreign_key "comments", "posts"

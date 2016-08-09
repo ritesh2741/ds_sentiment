@@ -40,7 +40,7 @@ class PostsController < ApplicationController
 			rescue
 				shares = 0
 			end
-			post = Post.create(title: title,fb_id: fb_id,shares: shares)
+			post = Post.create(title: title,fb_id: fb_id,shares: shares,dob: created_time)
 			unless x['comments'] == nil 
 				parse_comment(post.id,x)
 			end
@@ -62,16 +62,16 @@ class PostsController < ApplicationController
 			comments = p.comments
 			if p.comments.present?
 				comments.each do |c|
-					if c.sentiment1 == ("pos" || "positive")
+					if c.sentiment1 == "pos"
 						p.pos_sentiment1 += 1
-					elsif c.sentiment1 == ("neg" || "negative")
+					elsif c.sentiment1 == "neg"
 						p.neg_sentiment1 += 1
 					else
 						p.ntr_sentiment1 += 1
 					end
-					if c.sentiment2 == ("pos" || "positive")
+					if c.sentiment2 == "positive"
 						p.pos_sentiment2 += 1
-					elsif c.sentiment2 == ("neg" || "negative")
+					elsif c.sentiment2 == "negative"
 						p.neg_sentiment2 += 1
 					else
 						p.ntr_sentiment2 += 1
@@ -79,6 +79,7 @@ class PostsController < ApplicationController
 					p.save!
 				end
 			end
+			
 		end
 	end
 
@@ -97,5 +98,20 @@ class PostsController < ApplicationController
 	def self.req(mm,yy,access_token)
 		res = HTTParty.get("https://graph.facebook.com/v2.7/UniversityofAkron?"+access_token+"&fields=posts.until("+yy.to_s+"-"+(mm).to_s+"-31).since("+yy.to_s+"-"+mm.to_s+"-01).limit(100){created_time,comments,message,shares}")
 		feed = res.first.last.first.last
+	end
+
+	def self.like_update
+		access_token = "access_token=1015223221932064|bOn_v2I25DvHbFn6nWoVdKgo83Y"
+		posts = Post.all
+		posts.each do |p|
+			res = HTTParty.get("https://graph.facebook.com/v2.7/"+p.fb_id+"/?"+access_token+"&fields=likes.limit(5000),created_time")
+			sleep(1)
+			begin 
+				p.likes = res['likes']['data'].count
+			rescue
+				p.likes = 0
+			end
+				p.save!
+		end
 	end
 end
