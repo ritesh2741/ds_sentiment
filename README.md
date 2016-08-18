@@ -1,6 +1,6 @@
 # ds_sentiment
 
-# COPY posts TO '/tmp/posts' DELIMITER ',' CSV HEADER;
+COPY posts TO '/tmp/posts' DELIMITER ',' CSV HEADER;
 
 PostsController.fetch_post
 SentimentsController.analyze_sentiment
